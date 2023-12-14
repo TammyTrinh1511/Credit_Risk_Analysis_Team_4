@@ -33,3 +33,7 @@
 
 
   * Nguyen Manh Hung
+
+```bash
+pip install foobar
+```
