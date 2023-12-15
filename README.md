@@ -8,6 +8,7 @@
 
 
 ## Project Structure
+### Feature Engineering
 
 - `application_pipeline.py`: Handles the application data processing pipeline.
 - `bureau_pipeline.py`: Manages the bureau data processing pipeline.
@@ -19,7 +20,7 @@
 - `previous_application_pipeline.py`: Manages the previous application data processing pipeline.
 - `utils.py`: Contains utility functions used across different modules.
 
-## Modeling
+### Modeling
 
 - `modelling_experiment`: Folder containing various scripts related to model training and evaluation.
 
