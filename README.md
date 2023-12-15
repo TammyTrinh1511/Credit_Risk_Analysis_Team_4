@@ -8,6 +8,13 @@
 
 
 ## Project Structure
+### EDA
+- `eda_application.ipynb`: Jupyter Notebook for exploratory data analysis on the application data.
+- `bureau_balance_analysis.ipynb`: Jupyter Notebook for analyzing bureau balance data.
+- `previous_application.ipynb`: Jupyter Notebook for exploring previous application data.
+- `POS_CASH_analysis.ipynb`: Jupyter Notebook for analyzing POS CASH data.
+- `installment_payment.ipynb`: Jupyter Notebook for installment payment analysis.
+- `credit_card_balance.ipynb`: Jupyter Notebook for credit card balance analysis.
 ### Feature Engineering
 
 - `application_pipeline.py`: Handles the application data processing pipeline.
@@ -33,10 +40,24 @@
 
 ## Installation
 
+Clone về và tạo virtual environment
+```
+git clone TammyTrinh1511/Credit_Risk_Analysis_Team_4
+conda create -n credit-risk
+conda activate credit-risk # mỗi khi muốn dùng thì activate 
+conda install --file requirements.txt  # Nếu k dc thì python -m pip install -r requirements.txt 
 
-
+```
+Muốn upload code
+```
+git pull 
+git add myfile 
+git commit -m "add ..." 
+git push
+```
 
 ## Useage
+
 
 
 ## Contributing
