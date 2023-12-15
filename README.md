@@ -29,14 +29,12 @@
 
 ### Modeling
 
-- `modelling_experiment`: Folder containing various scripts related to model training and evaluation.
-
-  - `(submission_1)lgbm_gridsearchCV.py`: Script for LightGBM model training with grid search cross-validation.
-  - `(submission_2)kfold_lgbm_gridsearchCV.py`: Script for LightGBM model training with k-fold cross-validation and grid search.
-  - `VIF_gridsearchCV.py`: Script for feature selection using Variance Inflation Factor (VIF) and grid search.
-  - `kfold_lgbm_optuna.py`: Script for LightGBM model training with k-fold cross-validation using Optuna.
-  - `selectk_gridsearchCV.py`: Script for feature selection using SelectKBest and grid search.
-  - `utils.py`: Contains utility functions specific to the modeling experiments.
+- `(submission_1)lgbm_gridsearchCV.py`: Script for LightGBM model training with grid search cross-validation.
+- `(submission_2)kfold_lgbm_gridsearchCV.py`: Script for LightGBM model training with k-fold cross-validation and grid search.
+- `VIF_gridsearchCV.py`: Script for feature selection using Variance Inflation Factor (VIF) and grid search.
+- `kfold_lgbm_optuna.py`: Script for LightGBM model training with k-fold cross-validation using Optuna.
+- `selectk_gridsearchCV.py`: Script for feature selection using SelectKBest and grid search.
+- `utils.py`: Contains utility functions specific to the modeling experiments.
 
 ## Installation
 
