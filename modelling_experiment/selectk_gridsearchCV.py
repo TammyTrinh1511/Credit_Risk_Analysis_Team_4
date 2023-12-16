@@ -59,9 +59,7 @@ def fit_model_selectk_gridsearchCV(file_directory=None):
         if not os.path.exists("../results/"):
             os.makedirs("../results/")
         submit.to_csv('../results/selectkbest_gridsearchCV.csv', index=False)
-    with timer('Draw important features:'):
-        feat_importances_show(feature_names=columns, model=final_model, save_path='../results/selectkbest_gridsearchCV.png')
-
+    
 
 if __name__ == '__main__':
     fit_model_selectk_gridsearchCV()

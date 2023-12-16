@@ -295,11 +295,6 @@ CREDIT_CARD_AGG = {
     'MIN_PAYMENT_TOTAL_RATIO': ['min', 'mean'],
     'AMT_INTEREST_RECEIVABLE': ['min', 'mean'],
     'SK_DPD_RATIO': ['max', 'mean'],
-    'EXP_AMT_BALANCE': ['last'],
-    'EXP_AMT_CREDIT_LIMIT_ACTUAL': ['last'],
-    'EXP_AMT_RECEIVABLE_PRINCIPAL': ['last'],
-    'EXP_AMT_RECEIVABLE': ['last'],
-    'EXP_AMT_TOTAL_RECEIVABLE': ['last'],
     'EXP_AMT_DRAWING_SUM': ['last'],
     'EXP_BALANCE_LIMIT_RATIO': ['last'],
     'EXP_CNT_DRAWING_SUM': ['last'],
@@ -307,7 +302,12 @@ CREDIT_CARD_AGG = {
     'EXP_PAYMENT_MIN_DIFF': ['last'],
     'EXP_MIN_PAYMENT_TOTAL_RATIO': ['last'],
     'EXP_AMT_INTEREST_RECEIVABLE': ['last'],
-    'EXP_SK_DPD_RATIO': ['last']
+    'EXP_SK_DPD_RATIO': ['last'],
+    'EXP_AMT_BALANCE': ['last'],
+    'EXP_AMT_CREDIT_LIMIT_ACTUAL': ['last'],
+    'EXP_AMT_RECEIVABLE_PRINCIPAL': ['last'],
+    'EXP_AMT_RECEIVABLE': ['last'],
+    'EXP_AMT_TOTAL_RECEIVABLE': ['last'],
 }
 
 CREDIT_CARD_TIME_AGG = {

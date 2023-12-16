@@ -94,27 +94,34 @@ class preprocess_application_train_test:
         # Flag_document features - count and kurtosis
         docs = [f for f in self.application.columns if 'FLAG_DOC' in f]
         self.application['DOCUMENT_COUNT'] = self.application[docs].sum(axis=1)
-        self.application['NEW_DOC_KURT'] = self.application[docs].kurtosis(
-            axis=1)
+        self.application['NEW_DOC_KURT'] = self.application[docs].kurtosis(axis=1)
         # Categorical age - based on target=1 plot
-        self.application['AGE_RANGE'] = self.application['DAYS_BIRTH'].apply(
-            lambda x: get_age_label(x, [27, 40, 50, 65, 99]))
-        # Income by origin
-        inc_by_org = self.application[['AMT_INCOME_TOTAL', 'ORGANIZATION_TYPE']].groupby(
-            'ORGANIZATION_TYPE').median()['AMT_INCOME_TOTAL']
-        self.application['NEW_INC_BY_ORG'] = self.application['ORGANIZATION_TYPE'].map(
-            inc_by_org)
+        self.application['AGE_RANGE'] = self.application['DAYS_BIRTH'].apply(lambda x: get_age_label(x, [27, 40, 50, 65, 99]))
         # New features based on External sources
-        self.application['EXT_SOURCES_PROD'] = self.application['EXT_SOURCE_1'] * \
-            self.application['EXT_SOURCE_2'] * self.application['EXT_SOURCE_3']
-        self.application['EXT_SOURCES_WEIGHTED'] = self.application.EXT_SOURCE_1 * \
-            2 + self.application.EXT_SOURCE_2 * 1 + self.application.EXT_SOURCE_3 * 3
+        self.application['EXT_SOURCES_PROD'] = self.application['EXT_SOURCE_1'] * self.application['EXT_SOURCE_2'] * self.application['EXT_SOURCE_3']
+        self.application['EXT_SOURCES_WEIGHTED'] = self.application.EXT_SOURCE_1 * 2 + self.application.EXT_SOURCE_2 * 1 + self.application.EXT_SOURCE_3 * 3
         np.warnings.filterwarnings(
             'ignore', r'All-NaN (slice|axis) encountered')
         for function_name in ['min', 'max', 'mean', 'median', 'var']:
             feature_name = 'EXT_SOURCES_{}'.format(function_name.upper())
             self.application[feature_name] = eval('np.{}'.format(function_name))(
                 self.application[['EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3']], axis=1)
+        self.application['EXT_SOURCE_1^2'] = self.application['EXT_SOURCE_1']**2
+        self.application['EXT_SOURCE_2^2'] = self.application['EXT_SOURCE_2']**2
+        self.application['EXT_SOURCE_3^2'] = self.application['EXT_SOURCE_3']**2
+        self.application['EXT_SOURCE_1 EXT_SOURCE_2'] = self.application['EXT_SOURCE_1'] * self.application['EXT_SOURCE_2']
+        self.application['EXT_SOURCE_1 EXT_SOURCE_3'] = self.application['EXT_SOURCE_1'] * self.application['EXT_SOURCE_3']
+        self.application['EXT_SOURCE_2 EXT_SOURCE_3'] = self.application['EXT_SOURCE_2'] * self.application['EXT_SOURCE_3']
+        self.application['PHONE_TO_EMPLOY_RATIO'] = self.application['DAYS_LAST_PHONE_CHANGE'] / self.application['DAYS_EMPLOYED']
+        self.application['APP_SCORE1_TO_FAM_CNT_RATIO'] = self.application['EXT_SOURCE_1'] / self.application['CNT_FAM_MEMBERS']
+        self.application['APP_SCORE1_TO_GOODS_RATIO'] = self.application['EXT_SOURCE_1'] / self.application['AMT_GOODS_PRICE']
+        self.application['APP_SCORE1_TO_CREDIT_RATIO'] = self.application['EXT_SOURCE_1'] / self.application['AMT_CREDIT']
+        self.application['APP_SCORE1_TO_SCORE2_RATIO'] = self.application['EXT_SOURCE_1'] / self.application['EXT_SOURCE_2']
+        self.application['APP_SCORE1_TO_SCORE3_RATIO'] = self.application['EXT_SOURCE_1'] / self.application['EXT_SOURCE_3']
+        self.application['APP_SCORE2_TO_CREDIT_RATIO'] = self.application['EXT_SOURCE_2'] / self.application['AMT_CREDIT']
+        self.application['APP_SCORE2_TO_CITY_RATING_RATIO'] = self.application['EXT_SOURCE_2'] / self.application['REGION_RATING_CLIENT_W_CITY']
+        self.application['APP_SCORE2_TO_POP_RATIO'] = self.application['EXT_SOURCE_2'] / self.application['REGION_POPULATION_RELATIVE']
+        self.application['APP_SCORE2_TO_PHONE_CHANGE_RATIO'] = self.application['EXT_SOURCE_2'] / self.application['DAYS_LAST_PHONE_CHANGE']
 
         # Credit ratios
         self.application['CREDIT_TO_ANNUITY_RATIO'] = self.application['AMT_CREDIT'] / \
@@ -123,63 +130,31 @@ class preprocess_application_train_test:
             self.application['AMT_GOODS_PRICE']
         self.application['GOODS_INCOME_RATIO'] = self.application['AMT_GOODS_PRICE'] / \
             self.application['AMT_INCOME_TOTAL']
-        # Income ratios
-        self.application['ANNUITY_TO_INCOME_RATIO'] = self.application['AMT_ANNUITY'] / \
-            self.application['AMT_INCOME_TOTAL']
-        self.application['CREDIT_TO_INCOME_RATIO'] = self.application['AMT_CREDIT'] / \
-            self.application['AMT_INCOME_TOTAL']
-        self.application['INCOME_TO_EMPLOYED_RATIO'] = self.application['AMT_INCOME_TOTAL'] / \
-            self.application['DAYS_EMPLOYED']
-        self.application['INCOME_TO_BIRTH_RATIO'] = self.application['AMT_INCOME_TOTAL'] / \
-            self.application['DAYS_BIRTH']
-        self.application['INCOME_ANNUITY_DIFF'] = self.application['AMT_INCOME_TOTAL'] - \
-            self.application['AMT_ANNUITY']
-        self.application['INCOME_EXT_RATIO'] = self.application['AMT_INCOME_TOTAL'] / \
-            self.application['EXT_SOURCE_3']
-        self.application['CREDIT_EXT_RATIO'] = self.application['AMT_CREDIT'] / \
-            self.application['EXT_SOURCE_3']
+        
+        # Income features
+        inc_by_org = self.application[['AMT_INCOME_TOTAL', 'ORGANIZATION_TYPE']].groupby('ORGANIZATION_TYPE').median()['AMT_INCOME_TOTAL']
+        self.application['NEW_INC_BY_ORG'] = self.application['ORGANIZATION_TYPE'].map(inc_by_org)
+        self.application['ANNUITY_TO_INCOME_RATIO'] = self.application['AMT_ANNUITY'] / self.application['AMT_INCOME_TOTAL']
+        self.application['CREDIT_TO_INCOME_RATIO'] = self.application['AMT_CREDIT'] / self.application['AMT_INCOME_TOTAL']
+        self.application['INCOME_TO_EMPLOYED_RATIO'] = self.application['AMT_INCOME_TOTAL'] / self.application['DAYS_EMPLOYED']
+        self.application['INCOME_TO_BIRTH_RATIO'] = self.application['AMT_INCOME_TOTAL'] / self.application['DAYS_BIRTH']
+        self.application['INCOME_ANNUITY_DIFF'] = self.application['AMT_INCOME_TOTAL'] - self.application['AMT_ANNUITY']
+        self.application['INCOME_EXT_RATIO'] = self.application['AMT_INCOME_TOTAL'] / self.application['EXT_SOURCE_3']
+        self.application['CREDIT_EXT_RATIO'] = self.application['AMT_CREDIT'] / self.application['EXT_SOURCE_3']
+        self.application['INCOME_APARTMENT_AVG_MUL'] = self.application['APARTMENTS_SUM_AVG'] * self.application['AMT_INCOME_TOTAL']
+        self.application['INCOME_APARTMENT_MODE_MUL'] = self.application['APARTMENTS_SUM_MODE'] * self.application['AMT_INCOME_TOTAL']
+        self.application['INCOME_APARTMENT_MEDI_MUL'] = self.application['APARTMENTS_SUM_MEDI'] * self.application['AMT_INCOME_TOTAL']
+        self.application['INCOME_PER_CHILD'] = self.application['AMT_INCOME_TOTAL'] / (1 + self.application['CNT_CHILDREN'])
+        self.application['INCOME_PER_PERSON'] = self.application['AMT_INCOME_TOTAL'] / self.application['CNT_FAM_MEMBERS']
+        self.application['INCOME_CREDIT_PERCENTAGE'] = self.application['AMT_INCOME_TOTAL'] / self.application['AMT_CREDIT']
+        
         # Time ratios
-        self.application['EMPLOYED_TO_BIRTH_RATIO'] = self.application['DAYS_EMPLOYED'] / \
-            self.application['DAYS_BIRTH']
-        self.application['ID_TO_BIRTH_RATIO'] = self.application['DAYS_ID_PUBLISH'] / \
-            self.application['DAYS_BIRTH']
-        self.application['CAR_TO_BIRTH_RATIO'] = self.application['OWN_CAR_AGE'] / \
-            self.application['DAYS_BIRTH']
-        self.application['CAR_TO_EMPLOYED_RATIO'] = self.application['OWN_CAR_AGE'] / \
-            self.application['DAYS_EMPLOYED']
-        self.application['PHONE_TO_BIRTH_RATIO'] = self.application['DAYS_LAST_PHONE_CHANGE'] / \
-            self.application['DAYS_BIRTH']
-
-        # ---------------BỔ SUNG------------------------
-        self.application['EXT_SOURCE_1^2'] = self.application['EXT_SOURCE_1']**2
-        self.application['EXT_SOURCE_2^2'] = self.application['EXT_SOURCE_2']**2
-        self.application['EXT_SOURCE_3^2'] = self.application['EXT_SOURCE_3']**2
-        self.application['EXT_SOURCE_1 EXT_SOURCE_2'] = self.application['EXT_SOURCE_1'] * \
-            self.application['EXT_SOURCE_2']
-        self.application['EXT_SOURCE_1 EXT_SOURCE_3'] = self.application['EXT_SOURCE_1'] * \
-            self.application['EXT_SOURCE_3']
-        self.application['EXT_SOURCE_2 EXT_SOURCE_3'] = self.application['EXT_SOURCE_2'] * \
-            self.application['EXT_SOURCE_3']
-        self.application['PHONE_TO_EMPLOY_RATIO'] = self.application['DAYS_LAST_PHONE_CHANGE'] / \
-            self.application['DAYS_EMPLOYED']
-        self.application['APP_SCORE1_TO_FAM_CNT_RATIO'] = self.application['EXT_SOURCE_1'] / \
-            self.application['CNT_FAM_MEMBERS']
-        self.application['APP_SCORE1_TO_GOODS_RATIO'] = self.application['EXT_SOURCE_1'] / \
-            self.application['AMT_GOODS_PRICE']
-        self.application['APP_SCORE1_TO_CREDIT_RATIO'] = self.application['EXT_SOURCE_1'] / \
-            self.application['AMT_CREDIT']
-        self.application['APP_SCORE1_TO_SCORE2_RATIO'] = self.application['EXT_SOURCE_1'] / \
-            self.application['EXT_SOURCE_2']
-        self.application['APP_SCORE1_TO_SCORE3_RATIO'] = self.application['EXT_SOURCE_1'] / \
-            self.application['EXT_SOURCE_3']
-        self.application['APP_SCORE2_TO_CREDIT_RATIO'] = self.application['EXT_SOURCE_2'] / \
-            self.application['AMT_CREDIT']
-        self.application['APP_SCORE2_TO_CITY_RATING_RATIO'] = self.application['EXT_SOURCE_2'] / \
-            self.application['REGION_RATING_CLIENT_W_CITY']
-        self.application['APP_SCORE2_TO_POP_RATIO'] = self.application['EXT_SOURCE_2'] / \
-            self.application['REGION_POPULATION_RELATIVE']
-        self.application['APP_SCORE2_TO_PHONE_CHANGE_RATIO'] = self.application['EXT_SOURCE_2'] / \
-            self.application['DAYS_LAST_PHONE_CHANGE']
+        self.application['EMPLOYED_TO_BIRTH_RATIO'] = self.application['DAYS_EMPLOYED'] / self.application['DAYS_BIRTH']
+        self.application['ID_TO_BIRTH_RATIO'] = self.application['DAYS_ID_PUBLISH'] / self.application['DAYS_BIRTH']
+        self.application['CAR_TO_BIRTH_RATIO'] = self.application['OWN_CAR_AGE'] / self.application['DAYS_BIRTH']
+        self.application['CAR_TO_EMPLOYED_RATIO'] = self.application['OWN_CAR_AGE'] / self.application['DAYS_EMPLOYED']
+        self.application['PHONE_TO_BIRTH_RATIO'] = self.application['DAYS_LAST_PHONE_CHANGE'] / self.application['DAYS_BIRTH']
+        
         # apartment scores
         self.application['APARTMENTS_SUM_AVG'] = self.application['APARTMENTS_AVG'] + self.application['BASEMENTAREA_AVG'] + self.application['YEARS_BEGINEXPLUATATION_AVG'] + self.application[
             'YEARS_BUILD_AVG'] + self.application['COMMONAREA_AVG'] + self.application['ELEVATORS_AVG'] + self.application['ENTRANCES_AVG'] + self.application[
@@ -195,154 +170,98 @@ class preprocess_application_train_test:
             'YEARS_BUILD_MEDI'] + self.application['COMMONAREA_MEDI'] + self.application['ELEVATORS_MEDI'] + self.application['ENTRANCES_MEDI'] + self.application[
             'FLOORSMAX_MEDI'] + self.application['FLOORSMIN_MEDI'] + self.application['LANDAREA_MEDI'] + self.application['LIVINGAPARTMENTS_MEDI'] + self.application[
             'LIVINGAREA_MEDI'] + self.application['NONLIVINGAPARTMENTS_MEDI'] + self.application['NONLIVINGAREA_MEDI']
-        self.application['INCOME_APARTMENT_AVG_MUL'] = self.application['APARTMENTS_SUM_AVG'] * \
-            self.application['AMT_INCOME_TOTAL']
-        self.application['INCOME_APARTMENT_MODE_MUL'] = self.application['APARTMENTS_SUM_MODE'] * \
-            self.application['AMT_INCOME_TOTAL']
-        self.application['INCOME_APARTMENT_MEDI_MUL'] = self.application['APARTMENTS_SUM_MEDI'] * \
-            self.application['AMT_INCOME_TOTAL']
-
+        
         # features eng
-        self.application['CHILDRE_RATIO'] = self.application['CNT_CHILDREN'] / \
-            self.application['CNT_FAM_MEMBERS']
-        self.application['INCOME_PER_CHILD'] = self.application['AMT_INCOME_TOTAL'] / (
-            1 + self.application['CNT_CHILDREN'])
-        self.application['INCOME_PER_PERSON'] = self.application['AMT_INCOME_TOTAL'] / \
-            self.application['CNT_FAM_MEMBERS']
-        self.application['INCOME_CREDIT_PERCENTAGE'] = self.application['AMT_INCOME_TOTAL'] / \
-            self.application['AMT_CREDIT']
-        self.application['PAYMENT_RATE'] = self.application['AMT_ANNUITY'] / \
-            self.application['AMT_CREDIT']
+        self.application['CHILDRE_RATIO'] = self.application['CNT_CHILDREN'] / self.application['CNT_FAM_MEMBERS']
+        
+        self.application['PAYMENT_RATE'] = self.application['AMT_ANNUITY'] / self.application['AMT_CREDIT']
 
         # OBS And DEF
-        self.application['OBS_30_60_SUM'] = self.application['OBS_30_CNT_SOCIAL_CIRCLE'] + \
-            self.application['OBS_60_CNT_SOCIAL_CIRCLE']
-        self.application['DEF_30_60_SUM'] = self.application['DEF_30_CNT_SOCIAL_CIRCLE'] + \
-            self.application['DEF_60_CNT_SOCIAL_CIRCLE']
-        self.application['OBS_DEF_30_MUL'] = self.application['OBS_30_CNT_SOCIAL_CIRCLE'] * \
-            self.application['DEF_30_CNT_SOCIAL_CIRCLE']
-        self.application['OBS_DEF_60_MUL'] = self.application['OBS_60_CNT_SOCIAL_CIRCLE'] * \
-            self.application['DEF_60_CNT_SOCIAL_CIRCLE']
+        self.application['OBS_30_60_SUM'] = self.application['OBS_30_CNT_SOCIAL_CIRCLE'] + self.application['OBS_60_CNT_SOCIAL_CIRCLE']
+        self.application['DEF_30_60_SUM'] = self.application['DEF_30_CNT_SOCIAL_CIRCLE'] + self.application['DEF_60_CNT_SOCIAL_CIRCLE']
+        self.application['OBS_DEF_30_MUL'] = self.application['OBS_30_CNT_SOCIAL_CIRCLE'] * self.application['DEF_30_CNT_SOCIAL_CIRCLE']
+        self.application['OBS_DEF_60_MUL'] = self.application['OBS_60_CNT_SOCIAL_CIRCLE'] * self.application['DEF_60_CNT_SOCIAL_CIRCLE']
         self.application['SUM_OBS_DEF_ALL'] = self.application['OBS_30_CNT_SOCIAL_CIRCLE'] + self.application['DEF_30_CNT_SOCIAL_CIRCLE'] + self.application[
             'OBS_60_CNT_SOCIAL_CIRCLE'] + self.application['DEF_60_CNT_SOCIAL_CIRCLE']
-        self.application['OBS_30_CREDIT_RATIO'] = self.application['AMT_CREDIT'] / \
-            self.application['OBS_30_CNT_SOCIAL_CIRCLE']
-        self.application['OBS_60_CREDIT_RATIO'] = self.application['AMT_CREDIT'] / \
-            self.application['OBS_60_CNT_SOCIAL_CIRCLE']
-        self.application['DEF_30_CREDIT_RATIO'] = self.application['AMT_CREDIT'] / \
-            self.application['DEF_30_CNT_SOCIAL_CIRCLE']
-        self.application['DEF_60_CREDIT_RATIO'] = self.application['AMT_CREDIT'] / \
-            self.application['DEF_60_CNT_SOCIAL_CIRCLE']
+        self.application['OBS_30_CREDIT_RATIO'] = self.application['AMT_CREDIT'] / self.application['OBS_30_CNT_SOCIAL_CIRCLE']
+        self.application['OBS_60_CREDIT_RATIO'] = self.application['AMT_CREDIT'] / self.application['OBS_60_CNT_SOCIAL_CIRCLE']
+        self.application['DEF_30_CREDIT_RATIO'] = self.application['AMT_CREDIT'] / self.application['DEF_30_CNT_SOCIAL_CIRCLE']
+        self.application['DEF_60_CREDIT_RATIO'] = self.application['AMT_CREDIT'] / self.application['DEF_60_CNT_SOCIAL_CIRCLE']
+
         # Flag Documents combined
         self.application['SUM_FLAGS_DOCUMENTS'] = self.application['FLAG_DOCUMENT_3'] + self.application['FLAG_DOCUMENT_5'] + self.application['FLAG_DOCUMENT_6'] + self.application[
             'FLAG_DOCUMENT_7'] + self.application['FLAG_DOCUMENT_8'] + self.application['FLAG_DOCUMENT_9'] + self.application[
             'FLAG_DOCUMENT_11'] + self.application['FLAG_DOCUMENT_13'] + self.application['FLAG_DOCUMENT_14'] + self.application[
             'FLAG_DOCUMENT_15'] + self.application['FLAG_DOCUMENT_16'] + self.application['FLAG_DOCUMENT_17'] + self.application[
             'FLAG_DOCUMENT_18'] + self.application['FLAG_DOCUMENT_19'] + self.application['FLAG_DOCUMENT_21']
+
         # details change
-        self.application['DAYS_DETAILS_CHANGE_MUL'] = self.application['DAYS_LAST_PHONE_CHANGE'] * \
-            self.application['DAYS_REGISTRATION'] * \
+        self.application['DAYS_DETAILS_CHANGE_MUL'] = self.application['DAYS_LAST_PHONE_CHANGE'] * self.application['DAYS_REGISTRATION'] * \
             self.application['DAYS_ID_PUBLISH']
-        self.application['DAYS_DETAILS_CHANGE_SUM'] = self.application['DAYS_LAST_PHONE_CHANGE'] + \
-            self.application['DAYS_REGISTRATION'] + \
+        self.application['DAYS_DETAILS_CHANGE_SUM'] = self.application['DAYS_LAST_PHONE_CHANGE'] + self.application['DAYS_REGISTRATION'] + \
             self.application['DAYS_ID_PUBLISH']
+
         # enquires
         self.application['AMT_ENQ_SUM'] = self.application['AMT_REQ_CREDIT_BUREAU_HOUR'] + self.application['AMT_REQ_CREDIT_BUREAU_DAY'] + self.application['AMT_REQ_CREDIT_BUREAU_WEEK'] + self.application[
             'AMT_REQ_CREDIT_BUREAU_MON'] + self.application['AMT_REQ_CREDIT_BUREAU_QRT'] + self.application['AMT_REQ_CREDIT_BUREAU_YEAR']
-        self.application['ENQ_CREDIT_RATIO'] = self.application['AMT_ENQ_SUM'] / \
-            self.application['AMT_CREDIT']
-
-        self.application['CNT_NON_CHILD'] = self.application['CNT_FAM_MEMBERS'] - \
-            self.application['CNT_CHILDREN']
-        self.application['CHILD_TO_NON_CHILD_RATIO'] = self.application['CNT_CHILDREN'] / \
-            self.application['CNT_NON_CHILD']
-        self.application['INCOME_PER_NON_CHILD'] = self.application['AMT_INCOME_TOTAL'] / \
-            self.application['CNT_NON_CHILD']
-        self.application['CREDIT_PER_PERSON'] = self.application['AMT_CREDIT'] / \
-            self.application['CNT_FAM_MEMBERS']
-        self.application['CREDIT_PER_CHILD'] = self.application['AMT_CREDIT'] / \
-            (1 + self.application['CNT_CHILDREN'])
-        self.application['CREDIT_PER_NON_CHILD'] = self.application['AMT_CREDIT'] / \
-            self.application['CNT_NON_CHILD']
+        self.application['ENQ_CREDIT_RATIO'] = self.application['AMT_ENQ_SUM'] / self.application['AMT_CREDIT']
+        self.application['CNT_NON_CHILD'] = self.application['CNT_FAM_MEMBERS'] - self.application['CNT_CHILDREN']
+        self.application['CHILD_TO_NON_CHILD_RATIO'] = self.application['CNT_CHILDREN'] / self.application['CNT_NON_CHILD']
+        self.application['INCOME_PER_NON_CHILD'] = self.application['AMT_INCOME_TOTAL'] / self.application['CNT_NON_CHILD']
+        self.application['CREDIT_PER_PERSON'] = self.application['AMT_CREDIT'] / self.application['CNT_FAM_MEMBERS']
+        self.application['CREDIT_PER_CHILD'] = self.application['AMT_CREDIT'] / self.application['CNT_CHILDREN']
+        self.application['CREDIT_PER_NON_CHILD'] = self.application['AMT_CREDIT'] / self.application['CNT_NON_CHILD']
 
         # age bins
-        self.application['RETIREMENT_AGE'] = (
-            self.application['DAYS_BIRTH'] < -14000).astype(int)
-        self.application['DAYS_BIRTH_QCUT'] = pd.qcut(
-            self.application['DAYS_BIRTH'], q=5, labels=False)
+        self.application['RETIREMENT_AGE'] = (self.application['DAYS_BIRTH'] < -14000).astype(int)
+        self.application['DAYS_BIRTH_QCUT'] = pd.qcut(self.application['DAYS_BIRTH'], q=5, labels=False)
 
         # long employemnt
-        self.application['LONG_EMPLOYMENT'] = (
-            self.application['DAYS_EMPLOYED'] < -2000).astype(int)
+        self.application['LONG_EMPLOYMENT'] = (self.application['DAYS_EMPLOYED'] < -2000).astype(int)
 
-        bins = [0, 30000, 65000, 95000, 130000, 160000,
-                190880, 220000, 275000, 325000, np.inf]
+        bins = [0, 30000, 65000, 95000, 130000, 160000, 190880, 220000, 275000, 325000, np.inf]
         labels = range(1, 11)
         self.application['INCOME_BAND'] = pd.cut(
             self.application['AMT_INCOME_TOTAL'], bins=bins, labels=labels, right=False)
         # flag asset
         self.application['FLAG_ASSET'] = np.nan
-        filter_0 = (self.application['FLAG_OWN_CAR'] == 'N') & (
-            self.application['FLAG_OWN_REALTY'] == 'N')
-        filter_1 = (self.application['FLAG_OWN_CAR'] == 'Y') & (
-            self.application['FLAG_OWN_REALTY'] == 'N')
-        filter_2 = (self.application['FLAG_OWN_CAR'] == 'N') & (
-            self.application['FLAG_OWN_REALTY'] == 'Y')
-        filter_3 = (self.application['FLAG_OWN_CAR'] == 'Y') & (
-            self.application['FLAG_OWN_REALTY'] == 'Y')
+        filter_0 = (self.application['FLAG_OWN_CAR'] == 'N') & (self.application['FLAG_OWN_REALTY'] == 'N')
+        filter_1 = (self.application['FLAG_OWN_CAR'] == 'Y') & (self.application['FLAG_OWN_REALTY'] == 'N')
+        filter_2 = (self.application['FLAG_OWN_CAR'] == 'N') & (self.application['FLAG_OWN_REALTY'] == 'Y')
+        filter_3 = (self.application['FLAG_OWN_CAR'] == 'Y') & (self.application['FLAG_OWN_REALTY'] == 'Y')
 
         self.application.loc[filter_0, 'FLAG_ASSET'] = 0
         self.application.loc[filter_1, 'FLAG_ASSET'] = 1
         self.application.loc[filter_2, 'FLAG_ASSET'] = 2
         self.application.loc[filter_3, 'FLAG_ASSET'] = 3
-        # ----------------------------------------------------
 
         # Groupby: Statistics for applications in the same group
         group = ['ORGANIZATION_TYPE', 'NAME_EDUCATION_TYPE',
                  'OCCUPATION_TYPE', 'AGE_RANGE', 'CODE_GENDER']
-        self.application = do_median(
-            self.application, group, 'EXT_SOURCES_MEAN', 'GROUP_EXT_SOURCES_MEDIAN')
-        self.application = do_std(
-            self.application, group, 'EXT_SOURCES_MEAN', 'GROUP_EXT_SOURCES_STD')
-        self.application = do_mean(
-            self.application, group, 'AMT_INCOME_TOTAL', 'GROUP_INCOME_MEAN')
-        self.application = do_std(
-            self.application, group, 'AMT_INCOME_TOTAL', 'GROUP_INCOME_STD')
-        self.application = do_mean(
-            self.application, group, 'CREDIT_TO_ANNUITY_RATIO', 'GROUP_CREDIT_TO_ANNUITY_MEAN')
-        self.application = do_std(
-            self.application, group, 'CREDIT_TO_ANNUITY_RATIO', 'GROUP_CREDIT_TO_ANNUITY_STD')
-        self.application = do_mean(
-            self.application, group, 'AMT_CREDIT', 'GROUP_CREDIT_MEAN')
-        self.application = do_mean(
-            self.application, group, 'AMT_ANNUITY', 'GROUP_ANNUITY_MEAN')
-        self.application = do_std(
-            self.application, group, 'AMT_ANNUITY', 'GROUP_ANNUITY_STD')
+        self.application = do_median(self.application, group, 'EXT_SOURCES_MEAN', 'GROUP_EXT_SOURCES_MEDIAN')
+        self.application = do_std(self.application, group, 'EXT_SOURCES_MEAN', 'GROUP_EXT_SOURCES_STD')
+        self.application = do_mean(self.application, group, 'AMT_INCOME_TOTAL', 'GROUP_INCOME_MEAN')
+        self.application = do_std(self.application, group, 'AMT_INCOME_TOTAL', 'GROUP_INCOME_STD')
+        self.application = do_mean(self.application, group, 'CREDIT_TO_ANNUITY_RATIO', 'GROUP_CREDIT_TO_ANNUITY_MEAN')
+        self.application = do_std(self.application, group, 'CREDIT_TO_ANNUITY_RATIO', 'GROUP_CREDIT_TO_ANNUITY_STD')
+        self.application = do_mean(self.application, group, 'AMT_CREDIT', 'GROUP_CREDIT_MEAN')
+        self.application = do_mean(self.application, group, 'AMT_ANNUITY', 'GROUP_ANNUITY_MEAN')
+        self.application = do_std(self.application, group, 'AMT_ANNUITY', 'GROUP_ANNUITY_STD')
+
         # Groupby 2: Statistics for applications with the same credit duration, income type and education
-        self.application['CREDIT_TO_ANNUITY_GROUP'] = self.application['CREDIT_TO_ANNUITY_RATIO'].apply(
-            lambda x: _group_credit_to_annuity(x))
+        self.application['CREDIT_TO_ANNUITY_GROUP'] = self.application['CREDIT_TO_ANNUITY_RATIO'].apply(lambda x: _group_credit_to_annuity(x))
         group = ['CREDIT_TO_ANNUITY_GROUP',
                  'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE']
-        self.application = do_median(
-            self.application, group, 'EXT_SOURCES_MEAN', 'GROUP2_EXT_SOURCES_MEDIAN')
-        self.application = do_std(
-            self.application, group, 'EXT_SOURCES_MEAN', 'GROUP2_EXT_SOURCES_STD')
-        self.application = do_median(
-            self.application, group, 'AMT_INCOME_TOTAL', 'GROUP2_INCOME_MEDIAN')
-        self.application = do_std(
-            self.application, group, 'AMT_INCOME_TOTAL', 'GROUP2_INCOME_STD')
-        self.application = do_median(
-            self.application, group, 'CREDIT_TO_ANNUITY_RATIO', 'GROUP2_CREDIT_TO_ANNUITY_MEDIAN')
-        self.application = do_std(
-            self.application, group, 'CREDIT_TO_ANNUITY_RATIO', 'GROUP2_CREDIT_TO_ANNUITY_STD')
-        self.application = do_median(
-            self.application, group, 'AMT_CREDIT', 'GROUP2_CREDIT_MEDIAN')
-        self.application = do_std(
-            self.application, group, 'AMT_CREDIT', 'GROUP2_CREDIT_STD')
-        self.application = do_median(
-            self.application, group, 'AMT_ANNUITY', 'GROUP2_ANNUITY_MEDIAN')
-        self.application = do_std(
-            self.application, group, 'AMT_ANNUITY', 'GROUP2_ANNUITY_STD')
+        self.application = do_median(self.application, group, 'EXT_SOURCES_MEAN', 'GROUP1_EXT_SOURCES_MEDIAN')
+        self.application = do_std(self.application, group, 'EXT_SOURCES_MEAN', 'GROUP1_EXT_SOURCES_STD')
+        self.application = do_median(self.application, group, 'AMT_INCOME_TOTAL', 'GROUP1_INCOME_MEDIAN')
+        self.application = do_std(self.application, group, 'AMT_INCOME_TOTAL', 'GROUP1_INCOME_STD')
+        self.application = do_median(self.application, group, 'CREDIT_TO_ANNUITY_RATIO', 'GROUP1_CREDIT_TO_ANNUITY_MEDIAN')
+        self.application = do_std(self.application, group, 'CREDIT_TO_ANNUITY_RATIO', 'GROUP1_CREDIT_TO_ANNUITY_STD')
+        self.application = do_median(self.application, group, 'AMT_CREDIT', 'GROUP1_CREDIT_MEDIAN')
+        self.application = do_std(self.application, group, 'AMT_CREDIT', 'GROUP1_CREDIT_STD')
+        self.application = do_median(self.application, group, 'AMT_ANNUITY', 'GROUP1_ANNUITY_MEDIAN')
+        self.application = do_std(self.application, group, 'AMT_ANNUITY', 'GROUP1_ANNUITY_STD')
 
         # now we will create features based on categorical interactions
         columns_to_aggregate_on = [
@@ -355,13 +274,13 @@ class preprocess_application_train_test:
 
         ]
         aggregations = {
+            'EXT_SOURCE_1': ['mean', 'max', 'min'],
+            'EXT_SOURCE_2': ['mean', 'max', 'min'],
+            'EXT_SOURCE_3': ['mean', 'max', 'min'],
             'AMT_ANNUITY': ['mean', 'max', 'min'],
             'AMT_INCOME_TOTAL': ['mean', 'max', 'min'],
             'APARTMENTS_SUM_AVG': ['mean', 'max', 'min'],
             'APARTMENTS_SUM_MEDI': ['mean', 'max', 'min'],
-            'EXT_SOURCE_1': ['mean', 'max', 'min'],
-            'EXT_SOURCE_2': ['mean', 'max', 'min'],
-            'EXT_SOURCE_3': ['mean', 'max', 'min']
         }
 
         # extracting values
@@ -458,7 +377,7 @@ def drop_application_columns(df):
         'YEARS_BEGINEXPLUATATION_MODE', 'NONLIVINGAPARTMENTS_AVG', 'HOUSETYPE_MODE',
         'FONDKAPREMONT_MODE', 'EMERGENCYSTATE_MODE'
     ]
-    # Drop most flag document columns
+    # Drop most flag document columns (due to EDA)
     for doc_num in [2, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21]:
         drop_list.append('FLAG_DOCUMENT_{}'.format(doc_num))
     df.drop(drop_list, axis=1, inplace=True)

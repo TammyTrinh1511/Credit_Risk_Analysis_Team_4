@@ -77,9 +77,6 @@ def fit_model_VIF_gridsearchCV(file_directory=None):
         submit = test[['SK_ID_CURR']]
         submit.loc[:, 'TARGET'] = y_prob_test
         submit.to_csv('../results/VIF_gridsearchCV.csv', index=False)
-    with timer('Draw important features:'):
-        feat_importances_show(feature_names=columns, model=final_model, save_path='../results/VIF_gridsearchCV.png')
-
-
+    
 if __name__ == '__main__':
     fit_model_VIF_gridsearchCV()

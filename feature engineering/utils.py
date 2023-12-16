@@ -350,3 +350,57 @@ def chunk_groups(groupby_object, chunk_size):
             group_chunk, index_chunk = [], []
             # Yield the chunk of groups and indices
             yield index_chunk_, group_chunk_
+
+def add_ratios_features(df):
+    """
+    This function adds various ratio features to the dataframe.
+    Args:
+        df (pandas.DataFrame): The dataframe to which the features will be added.
+    Returns:
+        pandas.DataFrame: The dataframe with the added features.
+    """
+    # CREDIT TO INCOME RATIO
+    df['BUREAU_INCOME_CREDIT_RATIO'] = df['BUREAU_AMT_CREDIT_SUM_MEAN'] / df['AMT_INCOME_TOTAL']
+    df['BUREAU_ACTIVE_CREDIT_TO_INCOME_RATIO'] = df['BUREAU_ACTIVE_AMT_CREDIT_SUM_SUM'] / df['AMT_INCOME_TOTAL']
+    # PREVIOUS TO CURRENT CREDIT RATIO
+    df['CURRENT_TO_APPROVED_CREDIT_MIN_RATIO'] = df['APPROVED_AMT_CREDIT_MIN'] / df['AMT_CREDIT']
+    df['CURRENT_TO_APPROVED_CREDIT_MAX_RATIO'] = df['APPROVED_AMT_CREDIT_MAX'] / df['AMT_CREDIT']
+    df['CURRENT_TO_APPROVED_CREDIT_MEAN_RATIO'] = df['APPROVED_AMT_CREDIT_MEAN'] / df['AMT_CREDIT']
+    # PREVIOUS TO CURRENT ANNUITY RATIO
+    df['CURRENT_TO_APPROVED_ANNUITY_MAX_RATIO'] = df['APPROVED_AMT_ANNUITY_MAX'] / df['AMT_ANNUITY']
+    df['CURRENT_TO_APPROVED_ANNUITY_MEAN_RATIO'] = df['APPROVED_AMT_ANNUITY_MEAN'] / df['AMT_ANNUITY']
+    df['PAYMENT_MIN_TO_ANNUITY_RATIO'] = df['INS_AMT_PAYMENT_MIN'] / df['AMT_ANNUITY']
+    df['PAYMENT_MAX_TO_ANNUITY_RATIO'] = df['INS_AMT_PAYMENT_MAX'] / df['AMT_ANNUITY']
+    df['PAYMENT_MEAN_TO_ANNUITY_RATIO'] = df['INS_AMT_PAYMENT_MEAN'] / df['AMT_ANNUITY']
+    # PREVIOUS TO CURRENT CREDIT TO ANNUITY RATIO
+    df['CTA_CREDIT_TO_ANNUITY_MAX_RATIO'] = df['APPROVED_CREDIT_TO_ANNUITY_RATIO_MAX'] / df[
+        'CREDIT_TO_ANNUITY_RATIO']
+    df['CTA_CREDIT_TO_ANNUITY_MEAN_RATIO'] = df['APPROVED_CREDIT_TO_ANNUITY_RATIO_MEAN'] / df[
+        'CREDIT_TO_ANNUITY_RATIO']
+    # DAYS DIFFERENCES AND RATIOS
+    df['DAYS_DECISION_MEAN_TO_BIRTH'] = df['APPROVED_DAYS_DECISION_MEAN'] / df['DAYS_BIRTH']
+    df['DAYS_CREDIT_MEAN_TO_BIRTH'] = df['BUREAU_DAYS_CREDIT_MEAN'] / df['DAYS_BIRTH']
+    df['DAYS_DECISION_MEAN_TO_EMPLOYED'] = df['APPROVED_DAYS_DECISION_MEAN'] / df['DAYS_EMPLOYED']
+    df['DAYS_CREDIT_MEAN_TO_EMPLOYED'] = df['BUREAU_DAYS_CREDIT_MEAN'] / df['DAYS_EMPLOYED']
+    return df
+
+def add_groupby_features(df):
+    """Group some features by duration (credit/annuity) and extract the mean, median and std.
+
+    Arguments:
+        df: pandas DataFrame with features from all csv files
+
+    Returns:
+        df: Same DataFrame with the new features
+    """
+    g = 'CREDIT_TO_ANNUITY_RATIO'
+    feats = ['EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3', 'BUREAU_ACTIVE_DAYS_CREDIT_MEAN',
+             'APPROVED_CNT_PAYMENT_MEAN', 'EXT_SOURCES_PROD', 'CREDIT_TO_GOODS_RATIO',
+             'INS_DAYS_ENTRY_PAYMENT_MAX', 'EMPLOYED_TO_BIRTH_RATIO', 'EXT_SOURCES_MEAN',
+             'DAYS_REGISTRATION', 'DAYS_EMPLOYED', 'DAYS_BIRTH']
+    agg = df.groupby(g)[feats].agg(['mean', 'median', 'std'])
+    agg.columns = pd.Index(['CTAR_' + e[0] + '_' + e[1].upper() for e in agg.columns.tolist()])
+    df = df.join(agg, how='left', on=g)
+    del agg
+    gc.collect()
+    return df   
