@@ -8,6 +8,16 @@ While Home Credit is currently using various statistical and machine learning me
 A simple notebook on Exploration (EDA) and Baseline Machine Learning Model of Home Credit default risk data to predict future payment problems for clients of the company.
 
 ## Project Structure
+### Exploration Data Analysis
+`EDA`
+
+  - `1. application_analysis.ipynb`
+  - `2.bureau_analysis.ipynb`
+  - `3. bureau_balance_analysis.ipynb`
+  - `4. previous_application_analysis.ipynb`
+  - `5. POS_CASH_analysis.ipynb`
+  - `6.installments_payments_analysis.ipynb`
+  - `7. credit_card_balance_analysis.ipynb`
 ### Feature Engineering
 `feature engineering`
   
@@ -31,33 +41,6 @@ A simple notebook on Exploration (EDA) and Baseline Machine Learning Model of Ho
   - `selectk_gridsearchCV.py`: Script for feature selection using SelectKBest and grid search.
   - `utils.py`: Contains utility functions specific to the modeling experiments.
 
-## Installation
-
-
-
-
-## Usage
-
-
-## Contributing
-  * Trinh Thi Minh Tam
-    - EDA<br /> 
-      * Review and fix comments for all EDA files
-      * Refactor Code 
-    - Feature Engineer <br />
-    - Tunning model <br />
-  * Nguyen Manh Hung 
-    - EDA<br />
-      * Bureau
-      * Bureau_balance
-    - Slide <br />
-  * Nguyen Ha Phuong
-    - EDA<br />
-      * Application_train 
-      * Instalment_payment
-      * Credit_card_balance 
-      * POS_CASH_balance
-      * Previous_application
 
 
 ## Installation
@@ -65,30 +48,25 @@ A simple notebook on Exploration (EDA) and Baseline Machine Learning Model of Ho
 Clone về và tạo virtual environment
 ```
 git clone TammyTrinh1511/Credit_Risk_Analysis_Team_4
-conda create -n credit-risk
-conda activate credit-risk # mỗi khi muốn dùng thì activate 
-conda install --file requirements.txt  # Nếu k dc thì python -m pip install -r requirements.txt 
-
-```
-Muốn upload code
-```
-git pull 
-git add myfile 
-git commit -m "add ..." 
-git push
+conda create --name <env> --file requirements.txt
+cd Credit_Risk_Analysis_Team_4
 ```
 
 ## Useage
-
-
+Preprocessing data 
+```
+cd "feature engineering"
+python merge_data.py
+```
+Running experiment
+```
+cd modeling_experiment
+python <file_name>
+```
 
 ## Contributing
-  * Trinh Thi Minh Tam
-
-
+  * Trinh Thi Minh Tam <leader>
   * Nguyen Ha Phuong
-
-
   * Nguyen Manh Hung
 
 

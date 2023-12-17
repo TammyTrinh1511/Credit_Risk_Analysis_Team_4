@@ -86,7 +86,7 @@ def plot_nan_percent(df_nan, title_name, tight_layout = True, figsize = (20,8), 
         
         #plotting the Bar-Plot for NaN percentages (only for columns with Non-Zero percentage of NaN values)
         plt.figure(figsize = figsize, tight_layout = tight_layout)
-        sns.barplot(x= 'column', y = 'percent', data = df_nan[df_nan['percent'] > 0])
+        sns.barplot(x= 'column', y = 'percent', data = df_nan[df_nan['percent'] > 0], palette = 'Set1')
         plt.xticks(rotation = rotation)
         plt.xlabel('Column Name')
         plt.ylabel('Percentage of NaN values')
@@ -196,62 +196,6 @@ class correlation_matrix:
         
         return top_corr_target_df.iloc[:target_top_columns]
 
-def plot_phik_matrix(data, categorical_columns, figsize = (20,20), mask_upper = True, tight_layout = True, linewidth = 0.1, fontsize = 10, cmap = 'Blues', show_target_top_corr = True, target_top_columns = 10):
-    
-    '''
-    Function to Phi_k matrix for categorical features
-    
-    Inputs:
-        data: DataFrame
-            The DataFrame from which to build correlation matrix
-        categorical_columns: list
-            List of categorical columns whose PhiK values are to be plotted
-        figsize: tuple, default = (25,23)
-            Size of the figure to be plotted
-        mask_upper: bool, default = True
-            Whether to plot only the lower triangle of heatmap or plot full.
-        tight_layout: bool, default = True
-            Whether to keep tight layout or not
-        linewidth: float/int, default = 0.1
-            The linewidth to use for heatmap
-        fontsize: int, default = 10
-            The font size for the X and Y tick labels
-        cmap: str, default = 'Blues'
-            The colormap to be used for heatmap
-        show_target_top_corr: bool, default = True
-            Whether to show top/highly correlated features with Target.
-        target_top_columns: int, default = 10
-            The number of top correlated features with target to display
-    '''
-    
-    #first fetching only the categorical features
-    data_for_phik = data[categorical_columns].astype('object')
-    phik_matrix = data_for_phik.phik_matrix()
-    
-    print('-'*100)
-    
-    if mask_upper:
-        mask_array = np.ones(phik_matrix.shape)
-        mask_array = np.triu(mask_array)
-    else:
-        mask_array = np.zeros(phik_matrix.shape)
-        
-    plt.figure(figsize = figsize, tight_layout = tight_layout)
-    sns.heatmap(phik_matrix, annot = False, mask = mask_array, linewidth = linewidth, cmap = cmap)
-    plt.xticks(rotation = 90, fontsize = fontsize)
-    plt.yticks(rotation = 0, fontsize = fontsize)
-    plt.title("Phi-K Correlation Heatmap for Categorical Features")
-    plt.show()
-    print("-"*100)
-
-    if show_target_top_corr:
-        #Seeing the top columns with highest correlation with the target variable in application_train
-        print("Categories with highest values of Phi-K Correlation value with Target Variable are:")
-        phik_df = pd.DataFrame({'Column Name' : phik_matrix.TARGET.index[1:], 'Phik-Correlation' : phik_matrix.TARGET.values[1:]})
-        phik_df = phik_df.sort_values(by = 'Phik-Correlation', ascending = False)
-        display(phik_df.head(target_top_columns))
-        print("-"*100) 
-
 def plot_categorical_variables_bar(data, column_name, figsize = (18,6), percentage_display = True, plot_defaulter = True, rotation = 0, horizontal_adjust = 0, fontsize_percent = 'xx-small'):
     '''
     Function to plot Categorical Variables Bar Plots
@@ -300,7 +244,7 @@ def plot_categorical_variables_bar(data, column_name, figsize = (18,6), percenta
         percentage_defaulter_per_category = (data[column_name][data.TARGET == 1].value_counts() * 100 / data[column_name].value_counts()).dropna().sort_values(ascending = False)
 
         plt.subplot(1,2,2)
-        sns.barplot(x = percentage_defaulter_per_category.index, y = percentage_defaulter_per_category, palette = 'Set2')
+        sns.barplot(x = percentage_defaulter_per_category.index, y = percentage_defaulter_per_category, palette = 'Set1')
         plt.ylabel('Percentage of Defaulter per category')
         plt.xlabel(column_name, labelpad = 10)
         plt.xticks(rotation = rotation)
@@ -449,61 +393,17 @@ def plot_continuous_variables(data, column_name, plots = ['distplot', 'CDF', 'bo
                 plt.xlabel(f'{column_name} (log scale)')
 
         if ele == 'violin':  
-            sns.violinplot(x='TARGET', y=column_name, data=data_to_plot)
+            sns.violinplot(x='TARGET', y=column_name, data=data_to_plot, palette = 'Set1')
             plt.title("Violin-Plot of {}".format(column_name))
             if log_scale:
                 plt.yscale('log')
                 plt.ylabel(f'{column_name} (log Scale)')
 
         if ele == 'box':  
-            sns.boxplot(x='TARGET', y=column_name, data=data_to_plot)
+            sns.boxplot(x='TARGET', y=column_name, data=data_to_plot, palette = 'Set1')
             plt.title("Box-Plot of {}".format(column_name))
             if log_scale:
                 plt.yscale('log')
                 plt.ylabel(f'{column_name} (log Scale)')
 
     plt.show()
-
-
-def reduce_mem_usage(data, verbose = True):
-    #source: https://www.kaggle.com/gemartin/load-data-reduce-memory-usage
-    '''
-    This function is used to reduce the memory usage by converting the datatypes of a pandas
-    DataFrame withing required limits.
-    '''
-    
-    start_mem = data.memory_usage().sum() / 1024**2
-    if verbose:
-        print('-'*100)
-        print('Memory usage of dataframe: {:.2f} MB'.format(start_mem))
-    
-    for col in data.columns:
-        col_type = data[col].dtype
-        
-        if col_type != object:
-            c_min = data[col].min()
-            c_max = data[col].max()
-            if str(col_type)[:3] == 'int':
-                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
-                    data[col] = data[col].astype(np.int8)
-                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
-                    data[col] = data[col].astype(np.int16)
-                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
-                    data[col] = data[col].astype(np.int32)
-                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
-                    data[col] = data[col].astype(np.int64)  
-            else:
-                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
-                    data[col] = data[col].astype(np.float16)
-                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
-                    data[col] = data[col].astype(np.float32)
-                else:
-                    data[col] = data[col].astype(np.float64)
-
-    end_mem = data.memory_usage().sum() / 1024**2
-    if verbose:
-        print('Memory usage after optimization: {:.2f} MB'.format(end_mem))
-        print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
-        print('-'*100)
-    
-    return data
