@@ -141,13 +141,7 @@ class preprocess_application_train_test:
         self.application['INCOME_ANNUITY_DIFF'] = self.application['AMT_INCOME_TOTAL'] - self.application['AMT_ANNUITY']
         self.application['INCOME_EXT_RATIO'] = self.application['AMT_INCOME_TOTAL'] / self.application['EXT_SOURCE_3']
         self.application['CREDIT_EXT_RATIO'] = self.application['AMT_CREDIT'] / self.application['EXT_SOURCE_3']
-        self.application['INCOME_APARTMENT_AVG_MUL'] = self.application['APARTMENTS_SUM_AVG'] * self.application['AMT_INCOME_TOTAL']
-        self.application['INCOME_APARTMENT_MODE_MUL'] = self.application['APARTMENTS_SUM_MODE'] * self.application['AMT_INCOME_TOTAL']
-        self.application['INCOME_APARTMENT_MEDI_MUL'] = self.application['APARTMENTS_SUM_MEDI'] * self.application['AMT_INCOME_TOTAL']
-        self.application['INCOME_PER_CHILD'] = self.application['AMT_INCOME_TOTAL'] / (1 + self.application['CNT_CHILDREN'])
-        self.application['INCOME_PER_PERSON'] = self.application['AMT_INCOME_TOTAL'] / self.application['CNT_FAM_MEMBERS']
-        self.application['INCOME_CREDIT_PERCENTAGE'] = self.application['AMT_INCOME_TOTAL'] / self.application['AMT_CREDIT']
-        
+       
         # Time ratios
         self.application['EMPLOYED_TO_BIRTH_RATIO'] = self.application['DAYS_EMPLOYED'] / self.application['DAYS_BIRTH']
         self.application['ID_TO_BIRTH_RATIO'] = self.application['DAYS_ID_PUBLISH'] / self.application['DAYS_BIRTH']
@@ -216,9 +210,16 @@ class preprocess_application_train_test:
         self.application['RETIREMENT_AGE'] = (self.application['DAYS_BIRTH'] < -14000).astype(int)
         self.application['DAYS_BIRTH_QCUT'] = pd.qcut(self.application['DAYS_BIRTH'], q=5, labels=False)
 
-        # long employemnt
+        # Long employemnt
         self.application['LONG_EMPLOYMENT'] = (self.application['DAYS_EMPLOYED'] < -2000).astype(int)
-
+        # Income features
+        self.application['INCOME_APARTMENT_AVG_MUL'] = self.application['APARTMENTS_SUM_AVG'] * self.application['AMT_INCOME_TOTAL']
+        self.application['INCOME_APARTMENT_MODE_MUL'] = self.application['APARTMENTS_SUM_MODE'] * self.application['AMT_INCOME_TOTAL']
+        self.application['INCOME_APARTMENT_MEDI_MUL'] = self.application['APARTMENTS_SUM_MEDI'] * self.application['AMT_INCOME_TOTAL']
+        self.application['INCOME_PER_CHILD'] = self.application['AMT_INCOME_TOTAL'] / (1 + self.application['CNT_CHILDREN'])
+        self.application['INCOME_PER_PERSON'] = self.application['AMT_INCOME_TOTAL'] / self.application['CNT_FAM_MEMBERS']
+        self.application['INCOME_CREDIT_PERCENTAGE'] = self.application['AMT_INCOME_TOTAL'] / self.application['AMT_CREDIT']
+        
         bins = [0, 30000, 65000, 95000, 130000, 160000, 190880, 220000, 275000, 325000, np.inf]
         labels = range(1, 11)
         self.application['INCOME_BAND'] = pd.cut(
